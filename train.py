@@ -1,5 +1,4 @@
 import os
-import nni
 import copy
 import torch
 import argparse
@@ -29,7 +28,10 @@ def parse_arguments():
 	parser.add_argument('--student', '--model', default='resnet8', type=str, help='teacher student name')
 	parser.add_argument('--teacher-checkpoint', default='', type=str, help='optinal pretrained checkpoint for teacher')
 	parser.add_argument('--cuda', default=False, type=str2bool, help='whether or not use cuda(train on GPU)')
-	parser.add_argument('--dataset-dir', default='./data', type=str,  help='dataset directory')
+	parser.add_argument('--dataset-dir', default='/home/hongwei/KD/tiny-transformers/data', type=str,  help='dataset directory')
+	parser.add_argument('--seed', default=42, type=int, help='random seed')
+	parser.add_argument('--lambda_student', default=0.04, type=float)
+	parser.add_argument('--T_student', default=5, type=float)
 	args = parser.parse_args()
 	return args
 
@@ -165,10 +167,10 @@ if __name__ == "__main__":
 	# Parsing arguments and prepare settings for training
 	args = parse_arguments()
 	print(args)
-	config = nni.get_next_parameter()
+	config = args.__dict__
 	torch.manual_seed(config['seed'])
 	torch.cuda.manual_seed(config['seed'])
-	trial_id = os.environ.get('NNI_TRIAL_JOB_ID')
+	trial_id = 0
 	dataset = args.dataset
 	num_classes = 100 if dataset == 'cifar100' else 'cifar10'
 	teacher_model = None
@@ -181,8 +183,8 @@ if __name__ == "__main__":
 		'device': 'cuda' if args.cuda else 'cpu',
 		'is_plane': not is_resnet(args.student),
 		'trial_id': trial_id,
-		'T_student': config.get('T_student'),
-		'lambda_student': config.get('lambda_student'),
+		'T_student': config['T_student'],
+		'lambda_student': config['lambda_student'],
 	}
 	
 	
@@ -210,4 +212,4 @@ if __name__ == "__main__":
 	student_train_config['name'] = args.student
 	student_trainer = TrainManager(student_model, teacher=teacher_model, train_loader=train_loader, test_loader=test_loader, train_config=student_train_config)
 	best_student_acc = student_trainer.train()
-	nni.report_final_result(best_student_acc)
+	print(f"best_student_acc: {best_student_acc}")

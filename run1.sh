@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=6 python3 train.py --epochs 160 --student resnet110 --cuda 1 --dataset cifar100

@@ -709,3 +709,7 @@ tags
 [._]*.un~
 
 # End of https://www.gitignore.io/api/vim,emacs,linux,macos,latex,python,pycharm,pycharm+all,sublimetext,intellij+all
+
+
+# Custom additions:
+data

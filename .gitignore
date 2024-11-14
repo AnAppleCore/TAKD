@@ -713,3 +713,4 @@ tags
 
 # Custom additions:
 data
+*.pth.tar
